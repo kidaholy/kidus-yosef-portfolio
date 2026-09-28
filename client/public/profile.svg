@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" role="img" aria-label="Kidus Yosef">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c1a33"/>
+      <stop offset="0.55" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#101b36"/>
+    </linearGradient>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.32" r="0.75">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="480" rx="24" fill="url(#bg)"/>
+  <rect width="480" height="480" rx="24" fill="url(#glow)"/>
+  <circle cx="240" cy="212" r="118" fill="none" stroke="url(#acc)" stroke-opacity="0.55" stroke-width="2.5"/>
+  <circle cx="240" cy="212" r="94" fill="#0b1220" stroke="#22304f" stroke-width="1.5"/>
+  <text x="240" y="243" text-anchor="middle" font-family="Syne, 'Segoe UI', Arial, sans-serif" font-size="82" font-weight="800" fill="url(#acc)">KY</text>
+  <rect x="150" y="352" width="180" height="10" rx="5" fill="url(#acc)" opacity="0.9"/>
+  <text x="240" y="402" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="600" letter-spacing="6" fill="#e2e8f0">KIDUS YOSEF</text>
+  <text x="240" y="428" text-anchor="middle" font-family="Inter, 'Segoe UI', Arial, sans-serif" font-size="12.5" font-weight="500" letter-spacing="4" fill="#7d8da6">FULL-STACK DEVELOPER</text>
+  <g stroke="#38bdf8" stroke-opacity="0.35" stroke-width="1.5" fill="none">
+    <circle cx="86" cy="96" r="7"/>
+    <circle cx="404" cy="132" r="5"/>
+    <circle cx="70" cy="330" r="5"/>
+    <circle cx="416" cy="318" r="7"/>
+  </g>
+  <g stroke="#6366f1" stroke-opacity="0.35" stroke-width="1.5" fill="none">
+    <path d="M52 200h18M61 191v18"/>
+    <path d="M420 236h18M429 227v18"/>
+  </g>
+</svg>

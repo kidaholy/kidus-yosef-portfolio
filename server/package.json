@@ -1,0 +1,32 @@
+{
+  "name": "kidus-portfolio-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Express + MongoDB API for the Kidus Yosef portfolio",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "mongoose": "^8.16.4",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "mongoose",
+    "api"
+  ],
+  "author": "Kidus Yosef",
+  "license": "MIT"
+}
