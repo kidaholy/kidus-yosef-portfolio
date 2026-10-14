@@ -24,8 +24,17 @@ const adminHeaders = (user, pass) => ({
   'Content-Type': 'application/json',
 });
 
-export const fetchMessages = (user, pass) =>
-  jsonFetch('/api/messages', { headers: adminHeaders(user, pass) });
+export const fetchMessages = async (user, pass) => {
+  const res = await fetch(`${API_URL}/api/messages`, {
+    headers: adminHeaders(user, pass),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
+  return {
+    data,
+    storeMode: res.headers.get('X-Store-Mode') || '',
+  };
+};
 
 export const setMessageRead = (user, pass, id, read) =>
   jsonFetch(`/api/messages/${id}`, {

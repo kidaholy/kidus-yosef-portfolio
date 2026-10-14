@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { playSlideIn } from '../animations/siteMotion';
 
 const Experience = ({ experience = [] }) => {
   const [active, setActive] = useState(0);
@@ -19,6 +20,11 @@ const Experience = ({ experience = [] }) => {
     center(active);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+
+  // Replay a staggered entrance for the newly active role.
+  useEffect(() => {
+    playSlideIn(trackRef.current?.children[active]);
+  }, [active, experience.length]);
 
   if (!experience.length) return null;
 

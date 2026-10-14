@@ -14,26 +14,33 @@ const { notFound, errorHandler } = require('./middleware/error');
 const app = express();
 
 // Security headers
-app.use(helmet());// CORS — allow configured client origin(s) + any same-origin request
+app.use(helmet());
+
+// CORS — allow configured client origin(s) + any same-origin request
 const origins = (process.env.CLIENT_ORIGIN || 'http://localhost:3000')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
 
-app.use(
-  cors((req, cb) => {
-    const origin = req.headers.origin;
-    // curl / serverless health checks send no Origin header
-    if (!origin) return cb(null, true);
-    if (origins.includes(origin)) return cb(null, true);
-    // Same-origin requests (single-domain deploys, e.g. Vercel) are always allowed:
-    // the Origin host matches the Host the request was sent to.
-    try {
-      if (req.headers.host && new URL(origin).host === req.headers.host) return cb(null, true);
-    } catch {}
-    cb(new Error('Not allowed by CORS'));
-  })
-);
+const corsOptionsDelegate = (req, cb) => {
+  const options = { exposedHeaders: ['X-Store-Mode'] };
+  const origin = req.headers.origin;
+  // curl / serverless health checks send no Origin header
+  if (!origin || origins.includes(origin)) {
+    return cb(null, { ...options, origin: true });
+  }
+  // Same-origin requests (single-domain deploys, e.g. Vercel) are always allowed:
+  // the Origin host matches the Host the request was sent to.
+  try {
+    if (req.headers.host && new URL(origin).host === req.headers.host) {
+      return cb(null, { ...options, origin: true });
+    }
+  } catch {}
+  // Not allowed: respond without CORS headers (browser will block)
+  cb(null, { ...options, origin: false });
+};
+
+app.use(cors(corsOptionsDelegate));
 
 app.use(express.json({ limit: '100kb' }));
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));

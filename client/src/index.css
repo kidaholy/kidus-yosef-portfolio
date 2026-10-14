@@ -265,16 +265,8 @@ main,
   color: var(--muted2);
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.reveal.in {
-  opacity: 1;
-  transform: none;
-}
+/* `.reveal` is now only a JS hook: Anime.js applies the initial state and the
+   reveal itself (see src/animations/). Without JS the content stays visible. */
 
 /* ---------- Hero ---------- */
 .hero-wrap {
@@ -326,20 +318,6 @@ main,
   }
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(26px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.fade-up {
-  animation: fadeUp 0.8s ease both;
-}
 
 .grad-text {
   background: var(--grad);
@@ -380,6 +358,13 @@ main,
   font-weight: 700;
   letter-spacing: -1px;
   margin: 18px 0 10px;
+}
+
+/* Words are separate nodes already, so they can be transformed individually
+   (white-space: pre keeps the inter-word spacing intact). */
+.hero-name > span {
+  display: inline-block;
+  white-space: pre;
 }
 
 .hero-sub {
@@ -436,7 +421,6 @@ main,
   border: 0;
   border-radius: 0;
   filter: drop-shadow(0 30px 45px rgba(17, 17, 17, 0.28));
-  animation: fadeUp 0.9s ease both;
 }
 
 .hero-glow {
@@ -605,6 +589,7 @@ main,
   height: 100%;
   border-radius: 99px;
   background: var(--grad);
+  transform-origin: left center;
 }
 
 .about-actions {
@@ -668,13 +653,6 @@ main,
   background: var(--bg2);
   padding: 22px 24px;
   text-align: center;
-  animation: pfIn 0.4s ease backwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .svc-panel {
-    animation: none;
-  }
 }
 
 .svc-panel h3 {
@@ -769,32 +747,6 @@ main,
 /* Text-only project list */
 .pf-list {
   border-top: 1px solid var(--line);
-}
-
-/* Staggered entrance after a filter change (rows render fully visible) */
-.pf-list.pf-anim .pf-row {
-  animation: pfIn 0.45s ease backwards;
-}
-
-@keyframes pfIn {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-div.pf-list.pf-anim a.pf-row:hover {
-  transform: translateY(-2px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pf-list.pf-anim .pf-row {
-    animation: none;
-  }
 }
 
 .pf-row {
@@ -1375,6 +1327,19 @@ a.pf-row {
   background: rgba(220, 38, 38, 0.06);
 }
 
+.pill-btn.danger.arming {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+  animation: armPulse 1s ease infinite;
+}
+
+@keyframes armPulse {
+  50% {
+    opacity: 0.75;
+  }
+}
+
 .unread-badge {
   font-size: 10px;
   font-weight: 700;
@@ -1383,6 +1348,76 @@ a.pf-row {
   background: var(--accent);
   padding: 3px 10px;
   border-radius: 99px;
+}
+
+.store-warning {
+  max-width: 860px;
+  margin: 0 auto 20px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+  color: #b91c1c;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.store-warning code {
+  background: rgba(220, 38, 38, 0.1);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11.5px;
+}
+
+/* ---------- CV viewer page ---------- */
+.cv-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 30px 24px 60px;
+}
+
+.cv-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.cv-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cv-frame-wrap {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg2);
+  box-shadow: 0 18px 40px rgba(17, 17, 17, 0.08);
+}
+
+.cv-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 220px);
+  min-height: 520px;
+  border: 0;
+  background: #525659;
+}
+
+.cv-fallback {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted2);
+  margin-top: 14px;
+}
+
+.cv-fallback a {
+  color: var(--accent2);
+  font-weight: 600;
 }
 
 /* ---------- Responsive ---------- */

@@ -14,6 +14,7 @@ const Messages = () => {
   const navigate = useNavigate();
   const [auth, setAuth] = useState({ user: 'admin', pass: '' });
   const [messages, setMessages] = useState([]);
+  const [storeMode, setStoreMode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -23,8 +24,9 @@ const Messages = () => {
     setLoading(true);
     setError('');
     try {
-      const data = await fetchMessages(auth.user, auth.pass);
+      const { data, storeMode: mode } = await fetchMessages(auth.user, auth.pass);
       setMessages(data);
+      setStoreMode(mode || '');
       setLoaded(true);
     } catch (err) {
       setError(err.message || 'Failed to load messages');
@@ -50,8 +52,15 @@ const Messages = () => {
     }
   };
 
+  // Two-step inline delete confirmation (no native window.confirm dialog)
+  const [confirmingId, setConfirmingId] = useState(null);
+
   const remove = async (msg) => {
-    if (!window.confirm('Delete this message?')) return;
+    if (confirmingId !== msg._id) {
+      setConfirmingId(msg._id);
+      return;
+    }
+    setConfirmingId(null);
     try {
       await deleteMessage(auth.user, auth.pass, msg._id);
       setMessages((list) => list.filter((m) => m._id !== msg._id));
@@ -104,9 +113,17 @@ const Messages = () => {
         </div>
         {error && <p className="form-note err">{error}</p>}
         {!loaded && !error && (
-          <p className="form-note">Enter the admin credentials (see server/.env) to view the contact inbox.</p>
+          <p className="form-note">Enter the admin credentials to view the contact inbox.</p>
         )}
       </form>
+
+      {loaded && storeMode === 'memory' && (
+        <div className="store-warning" role="alert">
+          ⚠️ Temporary storage — the database is not connected, so these messages will be lost when
+          the server restarts. Whitelist your IP in MongoDB Atlas (Network Access → add{' '}
+          <code>0.0.0.0/0</code>) to store messages permanently.
+        </div>
+      )}
 
       {loaded && messages.length === 0 && <p className="form-note">No messages yet.</p>}
       {messages.map((msg) => (
@@ -124,8 +141,12 @@ const Messages = () => {
             <button className="pill-btn" onClick={() => toggleRead(msg)}>
               Mark as {msg.read ? 'unread' : 'read'}
             </button>
-            <button className="pill-btn danger" onClick={() => remove(msg)}>
-              Delete
+            <button
+              className={`pill-btn danger${confirmingId === msg._id ? ' arming' : ''}`}
+              onClick={() => remove(msg)}
+              onBlur={() => confirmingId === msg._id && setConfirmingId(null)}
+            >
+              {confirmingId === msg._id ? 'Click again to confirm' : 'Delete'}
             </button>
           </div>
         </article>

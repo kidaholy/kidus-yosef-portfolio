@@ -16,14 +16,14 @@ const Hero = ({ profile }) => {
         <div className="hero-grid">
           <div className="hero-copy">
             {availability && (
-              <span className="avail-badge fade-up">
+              <span className="avail-badge">
                 <span className="dot" /> {availability}
               </span>
             )}
-            <span className="chip fade-up" style={{ animationDelay: '0.1s' }}>
+            <span className="chip">
               {heroKicker}
             </span>
-            <h1 className="hero-name fade-up" style={{ animationDelay: '0.2s' }}>
+            <h1 className="hero-name">
               {name.split(' ').map((word, i) => (
                 <span key={i}>
                   {i === 1 ? <span className="grad-text">{word}</span> : word}
@@ -31,11 +31,11 @@ const Hero = ({ profile }) => {
                 </span>
               ))}
             </h1>
-            <p className="hero-sub fade-up" style={{ animationDelay: '0.3s' }}>{heroSub}</p>
+            <p className="hero-sub">{heroSub}</p>
             {tagline && (
-              <p className="hero-tag fade-up" style={{ animationDelay: '0.38s' }}>{tagline}</p>
+              <p className="hero-tag">{tagline}</p>
             )}
-            <div className="hero-actions fade-up" style={{ animationDelay: '0.46s' }}>
+            <div className="hero-actions">
               <a className="btn-p" href={cvPath} target="_blank" rel="noreferrer">
                 <IconDoc /> Download CV
               </a>

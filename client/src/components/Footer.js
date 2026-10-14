@@ -11,7 +11,7 @@ const Footer = ({ onNavigate, items = [], cvPath = '/kidus-yosef-cv.pdf' }) => {
               {label}
             </button>
           ))}
-          <a className="nav-link" href={cvPath} target="_blank" rel="noreferrer">
+          <a className="nav-link" href="/cv">
             CV
           </a>
           <a className="nav-link" href="/messages">

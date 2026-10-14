@@ -26,7 +26,7 @@ module.exports = {
     ],
     location: 'Addis Ababa, Ethiopia',
     email: 'kidayos2014@gmail.com',
-    phone: '+251 900 033 582',
+    phone: '+251 933 187 593',
     education: 'B.Sc. Information System — Wolkite University, 2026',
     languages: 'Amharic (Native) · English (Intermediate)',
     quote: {

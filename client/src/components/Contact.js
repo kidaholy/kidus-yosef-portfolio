@@ -58,11 +58,11 @@ const Contact = ({ profile }) => {
         <form className="contact-form reveal" onSubmit={onSubmit}>
           <label>
             YOUR NAME
-            <input name="name" value={form.name} onChange={onChange} placeholder="Jane Doe" required maxLength={120} />
+            <input name="name" value={form.name} onChange={onChange} placeholder="Kidus Yosef" required maxLength={120} />
           </label>
           <label>
             YOUR EMAIL
-            <input name="email" type="email" value={form.email} onChange={onChange} placeholder="jane@example.com" required />
+            <input name="email" type="email" value={form.email} onChange={onChange} placeholder="kidus@gmail.com" required />
           </label>
           <label>
             MESSAGE

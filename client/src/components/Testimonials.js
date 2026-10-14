@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { playSlideIn } from '../animations/siteMotion';
 
 const AUTO_MS = 6000;
 
@@ -6,6 +7,7 @@ const Testimonials = ({ testimonials = [] }) => {
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const timer = useRef(null);
+  const trackRef = useRef(null);
   const n = testimonials.length;
 
   const go = (idx) => setI(((idx % n) + n) % n);
@@ -17,8 +19,13 @@ const Testimonials = ({ testimonials = [] }) => {
     return () => clearInterval(timer.current);
   }, [paused, n]);
 
+  // Replay a staggered entrance for the newly active quote.
+  useEffect(() => {
+    if (!n) return;
+    playSlideIn(trackRef.current?.children[i], { step: 45 });
+  }, [i, n]);
+
   if (!testimonials.length) return null;
-  const current = testimonials[i];
 
   return (
     <section className="section" id="testimonials">
@@ -39,7 +46,11 @@ const Testimonials = ({ testimonials = [] }) => {
         </button>
 
         <div className="tm-viewport">
-          <div className="tm-track" style={{ transform: `translateX(-${i * 100}%)` }}>
+          <div
+            className="tm-track"
+            ref={trackRef}
+            style={{ transform: `translateX(-${i * 100}%)` }}
+          >
             {testimonials.map((t, idx) => (
               <figure
                 className={`tm-slide${idx === i ? ' active' : ''}`}

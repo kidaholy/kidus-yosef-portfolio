@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { animateMenuIn } from '../animations/siteMotion';
 
 const Navbar = ({ items, onNavigate, onHire }) => {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState('');
+  const navRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -18,6 +20,11 @@ const Navbar = ({ items, onNavigate, onHire }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, [items]);
 
+  // Stagger the links in when the mobile menu opens.
+  useEffect(() => {
+    if (open) animateMenuIn(navRef.current);
+  }, [open]);
+
   const go = (id) => {
     setOpen(false);
     onNavigate(id);
@@ -32,7 +39,7 @@ const Navbar = ({ items, onNavigate, onHire }) => {
         <button className="nav-toggle" onClick={() => setOpen((o) => !o)} aria-label="Toggle menu" aria-expanded={open}>
           ☰
         </button>
-        <nav className={`nav-items${open ? ' open' : ''}`} aria-label="Primary navigation">
+        <nav ref={navRef} className={`nav-items${open ? ' open' : ''}`} aria-label="Primary navigation">
           {items.map(({ id, label }) => (
             <button key={id} className={`nav-link${active === id ? ' on' : ''}`} onClick={() => go(id)}>
               {label}

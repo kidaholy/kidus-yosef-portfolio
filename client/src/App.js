@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { fetchPortfolio } from './api';
-import useReveal from './hooks/useReveal';
+import useSiteMotion from './animations/useSiteMotion';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -14,6 +14,7 @@ import Testimonials from './components/Testimonials';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Messages from './pages/Messages';
+import Cv from './components/Cv';
 import './App.css';
 
 const fallbackProfile = {
@@ -54,8 +55,10 @@ const Home = ({ profile }) => (
 function App() {
   const [profile, setProfile] = useState(fallbackProfile);
   const location = useLocation();
-  // Re-observe reveal elements whenever profile data (re)renders new sections
-  useReveal([profile]);
+  const navigate = useNavigate();
+  // Site-wide Anime.js motion layer (reveals, scroll effects, hover, ...).
+  // It re-scans automatically as profile data / filters / routes render.
+  useSiteMotion();
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +78,10 @@ function App() {
   }, [location.pathname]);
 
   const scrollTo = (id) => {
+    if (id === 'cv') {
+      navigate('/cv');
+      return;
+    }
     if (location.pathname !== '/') {
       window.location.href = `/#${id}`;
       return;
@@ -90,6 +97,7 @@ function App() {
     { id: 'skills', label: 'Skills' },
     { id: 'portfolio', label: 'Portfolio' },
     { id: 'testimonials', label: 'Testimonials' },
+    { id: 'cv', label: 'CV' },
     { id: 'contact', label: 'Contact Us' },
   ];
 
@@ -100,6 +108,7 @@ function App() {
       <Navbar items={navItems} onNavigate={scrollTo} onHire={() => scrollTo('contact')} />
       <Routes>
         <Route path="/" element={<Home profile={profile} />} />
+        <Route path="/cv" element={<Cv />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

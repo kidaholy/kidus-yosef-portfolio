@@ -47,15 +47,16 @@ router.post('/', contactLimiter, async (req, res) => {
 const requireAdmin = (req, res, next) => {
   const header = req.headers.authorization || '';
   const [scheme, encoded] = header.split(' ');
+  // NOTE: no WWW-Authenticate header here on purpose — sending it makes the
+  // browser pop its native Basic-Auth login dialog. Admin login is handled
+  // exclusively by the in-page form on /messages.
   if (scheme !== 'Basic' || !encoded) {
-    res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
     return res.status(401).json({ message: 'Unauthorized' });
   }
   const [user, pass] = Buffer.from(encoded, 'base64').toString('utf8').split(':');
   const expectedUser = process.env.ADMIN_USER || 'admin';
   const expectedPass = process.env.ADMIN_PASSWORD || 'kidus2026';
   if (user === expectedUser && pass === expectedPass) return next();
-  res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
   res.status(401).json({ message: 'Unauthorized' });
 };
 
@@ -66,6 +67,8 @@ router.get('/', requireAdmin, async (req, res) => {
     const messages = dbOn()
       ? await Message.find().sort({ createdAt: -1 }).lean()
       : memoryMessages;
+    // Client shows a persistence warning when the store is memory-only
+    res.set('X-Store-Mode', dbOn() ? 'database' : 'memory');
     res.json(messages);
   } catch (err) {
     console.error(`list messages error: ${err.message}`);

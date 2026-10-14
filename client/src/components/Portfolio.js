@@ -2,9 +2,8 @@ import { useMemo, useState } from 'react';
 
 const Portfolio = ({ projects = [], filters = [] }) => {
   const [active, setActive] = useState('All');
-  // After the user picks a filter, render rows fully visible with a staggered
-  // fade-in (keyed remount) instead of relying on the scroll-reveal observer,
-  // which made rows invisible until the next scroll event.
+  // A filter change remounts the list (keyed), which lets the site motion
+  // layer re-run its staggered row entrance for the newly rendered rows.
   const [interacted, setInteracted] = useState(false);
 
   const selectFilter = (f) => {
@@ -34,7 +33,7 @@ const Portfolio = ({ projects = [], filters = [] }) => {
         ))}
       </div>
       <div className={`pf-list${interacted ? ' pf-anim' : ''}`} key={interacted ? active : 'initial'}>
-        {visible.map((p, i) => {
+        {visible.map((p) => {
           const Row = p.link ? 'a' : 'div';
           const linkProps = p.link
             ? { href: p.link, target: '_blank', rel: 'noreferrer' }
@@ -43,7 +42,6 @@ const Portfolio = ({ projects = [], filters = [] }) => {
             <Row
               className={`pf-row${interacted ? '' : ' reveal'}`}
               key={p.num || p.title}
-              style={interacted ? { animationDelay: `${i * 60}ms` } : undefined}
               {...linkProps}
               title={p.description}
             >
