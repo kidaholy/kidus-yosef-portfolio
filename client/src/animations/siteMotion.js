@@ -212,7 +212,8 @@ export const revealStagger = (registry, container, children, opts = {}) => {
     container,
     els,
     { opacity: 0, y },
-    { opacity: 1, y: 0, duration, ease, delay: stagger(step, { from }) }
+    // `delay` is the base offset before the stagger sequence starts.
+    { opacity: 1, y: 0, duration, ease, delay: stagger(step, { from, start: delay }) }
   );
 };
 

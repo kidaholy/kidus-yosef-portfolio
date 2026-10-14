@@ -101,8 +101,6 @@ function App() {
     { id: 'contact', label: 'Contact Us' },
   ];
 
-  const initials = `${(profile.firstName || 'K')[0]}${(profile.lastName || 'Y')[0]}`.toUpperCase();
-
   return (
     <div className="App app">
       <Navbar items={navItems} onNavigate={scrollTo} onHire={() => scrollTo('contact')} />
