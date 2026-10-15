@@ -23,11 +23,13 @@ const ensureConn = () => {
   return connPromise;
 };
 
-// A warm connection resolves instantly, so this only ever delays a genuine cold
-// start — and never by more than a moment. Routes fall back to the bundled
-// profile / in-memory store, so the first response is never held hostage to a
-// slow database (which was the cause of a multi-second empty first paint).
-const CONNECT_GRACE_MS = 1200;
+// A warm connection resolves instantly, so this only ever delays a request when
+// the database is still connecting or unreachable. Keep it short: the routes
+// serve the complete bundled profile / in-memory store on their own, so waiting
+// longer buys nothing but latency (measured: production never reaches Atlas, so
+// a long grace was ~1s of pure dead time on every cold start). The connect
+// continues in the background either way and is picked up on later requests.
+const CONNECT_GRACE_MS = 300;
 
 const withGrace = (promise) =>
   Promise.race([promise, new Promise((resolve) => setTimeout(resolve, CONNECT_GRACE_MS))]);
