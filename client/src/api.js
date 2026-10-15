@@ -1,20 +1,62 @@
-// Dev default: local API server. Production (.env.production): same-origin /api.
+// Base URL for API calls.
+// - Explicit REACT_APP_API_URL wins when set to a non-empty value.
+// - Production builds default to same-origin `/api` (rewritten to the
+//   serverless function on Vercel) — NOT localhost. client/.env.production is
+//   gitignored, so the build there must not depend on it to get this right.
+// - Development falls back to the local API server.
+const configuredUrl = process.env.REACT_APP_API_URL;
 const API_URL =
-  process.env.REACT_APP_API_URL !== undefined
-    ? process.env.REACT_APP_API_URL.replace(/\/$/, '')
-    : 'http://localhost:5000';
+  configuredUrl !== undefined && configuredUrl !== ''
+    ? configuredUrl.replace(/\/$/, '')
+    : process.env.NODE_ENV === 'production'
+      ? ''
+      : 'http://localhost:5000';
 
 const jsonFetch = async (path, options = {}) => {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
-  return data;
+  const { timeout = 8000, ...rest } = options;
+  // Bound every request so a hung (not refused) API can't stall the page.
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeout) : null;
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...rest,
+      ...(controller ? { signal: controller.signal } : {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const error = new Error(data.message || `Request failed (${res.status})`);
+      error.status = res.status;
+      throw error;
+    }
+    return data;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 };
 
-export const fetchPortfolio = () => jsonFetch('/api/portfolio');
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// The API may still be starting (dev) or its serverless instance may be cold,
+// so transient failures are retried instead of leaving the page without content.
+const RETRY_DELAYS = [400, 900, 1800, 3000, 4000, 5000, 8000, 10000, 15000];
+
+const withRetry = async (fn) => {
+  let lastError;
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt += 1) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      const retryable = !err.status || err.status >= 500;
+      if (!retryable || attempt === RETRY_DELAYS.length) break;
+      await sleep(RETRY_DELAYS[attempt]);
+    }
+  }
+  throw lastError;
+};
+
+export const fetchPortfolio = () => withRetry(() => jsonFetch('/api/portfolio', { timeout: 6000 }));
 
 export const sendMessage = (payload) =>
   jsonFetch('/api/messages', { method: 'POST', body: JSON.stringify(payload) });

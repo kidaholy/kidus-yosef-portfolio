@@ -62,6 +62,10 @@ const useSiteMotion = () => {
     window.addEventListener('resize', sweep);
     const late1 = setTimeout(registry.sweep.bind(registry), 700);
     const late2 = setTimeout(registry.sweep.bind(registry), 2200);
+    // Content must never be withheld: if anything is still hidden shortly after
+    // load, show it. Also covers late-arriving sections (e.g. a slow API).
+    const revealSafety = setTimeout(registry.revealHidden.bind(registry), 1500);
+    const revealSafetyLate = setTimeout(registry.revealHidden.bind(registry), 3000);
 
     return () => {
       observer.disconnect();
@@ -72,6 +76,8 @@ const useSiteMotion = () => {
       clearTimeout(watchdog);
       clearTimeout(late1);
       clearTimeout(late2);
+      clearTimeout(revealSafety);
+      clearTimeout(revealSafetyLate);
       registry.revert();
     };
   }, []);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { fetchPortfolio } from './api';
 import useSiteMotion from './animations/useSiteMotion';
@@ -35,6 +35,29 @@ const fallbackProfile = {
   cvPath: '/kidus-yosef-cv.pdf',
 };
 
+// The last successful profile is cached so a returning visitor renders every
+// section immediately instead of waiting on the API for the first paint.
+const PROFILE_CACHE_KEY = 'kidus-portfolio-profile-v1';
+
+const readCachedProfile = () => {
+  try {
+    const raw = window.localStorage.getItem(PROFILE_CACHE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && parsed.name ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const cacheProfile = (data) => {
+  try {
+    window.localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(data));
+  } catch {
+    /* private mode / quota — caching is optional */
+  }
+};
+
 const Home = ({ profile }) => (
   <main>
     <Hero profile={profile} />
@@ -53,22 +76,51 @@ const Home = ({ profile }) => (
 );
 
 function App() {
-  const [profile, setProfile] = useState(fallbackProfile);
+  const [profile, setProfile] = useState(() => ({ ...fallbackProfile, ...readCachedProfile() }));
   const location = useLocation();
   const navigate = useNavigate();
   // Site-wide Anime.js motion layer (reveals, scroll effects, hover, ...).
   // It re-scans automatically as profile data / filters / routes render.
   useSiteMotion();
 
+  // Loads the profile; fetchPortfolio already retries transient failures. If it
+  // still isn't loaded, one more attempt is made when the tab becomes visible
+  // or the connection returns, so a late-starting API needs no manual reload.
+  const loadedRef = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
-    fetchPortfolio()
-      .then((data) => {
-        if (!cancelled) setProfile({ ...fallbackProfile, ...data });
-      })
-      .catch(() => {});
+    let inFlight = false;
+
+    const load = async () => {
+      if (inFlight || loadedRef.current) return;
+      inFlight = true;
+      try {
+        const data = await fetchPortfolio();
+        if (!cancelled) {
+          const next = { ...fallbackProfile, ...data };
+          setProfile(next);
+          cacheProfile(next);
+          loadedRef.current = true;
+        }
+      } catch {
+        /* retried above and by the listeners below */
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const retryWhenAvailable = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+
+    load();
+    document.addEventListener('visibilitychange', retryWhenAvailable);
+    window.addEventListener('online', retryWhenAvailable);
     return () => {
       cancelled = true;
+      document.removeEventListener('visibilitychange', retryWhenAvailable);
+      window.removeEventListener('online', retryWhenAvailable);
     };
   }, []);
 

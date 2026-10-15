@@ -82,6 +82,18 @@ export const createRegistry = (reduced = false) => ({
     this.pending.forEach((entry) => forceVisible(entry.el));
   },
 
+  // Bounded safety net used shortly after load: reveal anything that is still
+  // pre-hidden (inline opacity exactly 0). Elements mid-animation are left
+  // alone, and parallax targets are never hidden, so this can only ever rescue
+  // content whose entrance failed to start.
+  revealHidden() {
+    const show = (el) => {
+      if (el && el.nodeType === 1 && el.style && el.style.opacity === '0') forceVisible(el);
+    };
+    this.touched.forEach(show);
+    this.pending.forEach((entry) => show(entry.el));
+  },
+
   revert() {
     this.animations.forEach((a) => {
       try {

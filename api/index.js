@@ -16,19 +16,23 @@ const ensureConn = () => {
         serverSelectionTimeoutMS: 8000,
       })
       .catch((err) => {
-        connPromise = null; // allow retry on next invocation
-        throw err;
+        console.error(`MongoDB connect failed: ${err.message}`);
+        connPromise = null; // allow retry on the next invocation
       });
   }
   return connPromise;
 };
 
+// A warm connection resolves instantly, so this only ever delays a genuine cold
+// start — and never by more than a moment. Routes fall back to the bundled
+// profile / in-memory store, so the first response is never held hostage to a
+// slow database (which was the cause of a multi-second empty first paint).
+const CONNECT_GRACE_MS = 1200;
+
+const withGrace = (promise) =>
+  Promise.race([promise, new Promise((resolve) => setTimeout(resolve, CONNECT_GRACE_MS))]);
+
 module.exports = async (req, res) => {
-  try {
-    await ensureConn();
-  } catch (err) {
-    console.error(`MongoDB connect failed: ${err.message}`);
-    // App still responds — routes fall back to bundled content / memory store
-  }
+  await withGrace(ensureConn());
   return app(req, res);
 };

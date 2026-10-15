@@ -65,7 +65,10 @@ app.use(errorHandler);
 const PORT = Number(process.env.PORT) > 0 ? Number(process.env.PORT) : 5000;
 
 const start = async () => {
-  await connectDB();
+  // Listen first, connect in the background: the routes serve the bundled
+  // profile until the database is ready, so a slow/unreachable DB can never
+  // leave the API unreachable (and the site without content) on startup.
+  connectDB();
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT} (${process.env.NODE_ENV || 'development'})`);
   });

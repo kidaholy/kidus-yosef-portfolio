@@ -8,6 +8,19 @@ const profile = require('../data/profile');
 
 const router = express.Router();
 
+// A slow database must never delay the page: the bundled profile is complete,
+// so if the database doesn't answer within this window we serve it right away.
+const DB_QUERY_TIMEOUT_MS = 1000;
+
+const withDeadline = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      const timer = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
+      if (typeof timer.unref === 'function') timer.unref();
+    }),
+  ]);
+
 // @route   GET /api/portfolio
 // @desc    Full portfolio content (DB if seeded, otherwise bundled profile)
 router.get('/', async (req, res) => {
@@ -16,12 +29,16 @@ router.get('/', async (req, res) => {
     return res.json({ ...profile, source: 'fallback' });
   }
   try {
-    const [projects, experience, skills, posts] = await Promise.all([
-      Project.find().sort({ order: 1 }).lean(),
-      Experience.find().sort({ order: 1 }).lean(),
-      SkillGroup.find().sort({ order: 1 }).lean(),
-      Post.find().sort({ order: 1 }).lean(),
-    ]);
+    const [projects, experience, skills, posts] = await withDeadline(
+      Promise.all([
+        Project.find().sort({ order: 1 }).lean(),
+        Experience.find().sort({ order: 1 }).lean(),
+        SkillGroup.find().sort({ order: 1 }).lean(),
+        Post.find().sort({ order: 1 }).lean(),
+      ]),
+      DB_QUERY_TIMEOUT_MS,
+      'portfolio query'
+    );
 
     const hasData = projects.length > 0 || experience.length > 0 || skills.length > 0 || posts.length > 0;
 
@@ -37,7 +54,9 @@ router.get('/', async (req, res) => {
     }
     res.json({ ...profile, source: 'fallback' });
   } catch (err) {
-    console.error(`portfolio error: ${err.message}`);
+    // Failed or simply slower than the deadline — the bundled profile has the
+    // same content, so respond with it now instead of making the visitor wait.
+    console.warn(`portfolio: serving bundled content (${err.message})`);
     res.json({ ...profile, source: 'fallback' });
   }
 });
