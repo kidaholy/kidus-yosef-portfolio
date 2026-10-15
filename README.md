@@ -2,7 +2,7 @@
 
 Personal portfolio website for **Kidus Yosef**, Full-Stack Developer — built with the MERN stack and deployed on Vercel.
 
-🔗 **Live:** https://kidus-yosef-portfolio-jade.vercel.app
+🔗 **Live:** https://kidus-yosef.vercel.app
 
 ## Features
 
